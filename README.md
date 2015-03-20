@@ -5,7 +5,7 @@ Automatically update UI when javascript object gets updated
 
 **html**
 ```html
-<div id='container' data-id={{id}}>
+<div id='container' id='item-{{id}}'>
     Some text here for {{id}}
 	<h1 data-id='{{id}}'>{{title}}</h1>
 	<p>{{details}}</p>
