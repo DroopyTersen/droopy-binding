@@ -49,10 +49,11 @@ OnewayBinding.prototype.getBindings = function(element) {
 	// 1. Look for attribute bindings on the current element
 	if (element.attributes) {
 		for(i = 0; i < element.attributes.length; i++) {
-			var attributeValue = element.attributes[i].nodeValue;
-			bindings = templating.getPlaceHolders(attributeValue).map(function(placeholder){
-				return new NodeBinding(element.attributes[i], placeholder);
-			});
+			var attributeBindings = templating.getPlaceHolders(element.attributes[i].nodeValue)
+				.map(function(placeholder){
+					return new NodeBinding(element.attributes[i], placeholder);
+				});
+			bindings = bindings.concat(attributeBindings);
 		}
 	}
 	// 2.a If the element has children, it won't have a text binding. Recurse on children
