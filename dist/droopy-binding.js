@@ -134,17 +134,50 @@ var OnewayBinding = function(containerId, model) {
 OnewayBinding.prototype.init = function() {
 	var self = this;
 	self.updateBindings();
-	Object.observe(self.model, function(changes) {
-		self.handleModelChange(changes);
+	deepObserve(self.model, function(changes, propChain) {
+		self.handleModelChange(changes, propChain);
 	});
 };
 
-OnewayBinding.prototype.handleModelChange = function(changes) {
+function deepObserve(observable, onChange) {
+	innerObserve(observable, "", onChange);
+
+	function innerObserve(obj, propChain, callback) {
+		// Make sure its an array or object
+		if (!Array.isArray(obj) && typeof obj !== "object") return;
+
+		// Observe the current level
+		// TODO: add array support
+		//var nativeObserve = Array.isArray(obj) ? Array.observe : Object.observe;
+		Object.observe(obj, function(changes) {
+			callback(changes, propChain);
+		});
+		
+		// Recursively observe any child objects
+		Object.keys(obj).forEach(function(propName) {
+			var newPropChain = propChain;
+			if (newPropChain) {
+				newPropChain += "." + propName;
+			} else {
+				newPropChain = propName;
+			}
+			innerObserve(obj[propName], newPropChain, callback);
+		});
+	}
+}
+
+
+OnewayBinding.prototype.handleModelChange = function(changes, propChain) {
 	var self = this;
-	changes.forEach(function(change){
+	changes.forEach(function(change) {
+		var changedProp = change.name;
+		if (propChain) {
+			changedProp = propChain + "." + change.name;
+		}
 		// Check each binding to see if it cares, update if it does
 		self.bindings.forEach(function(binding) {
-			if(binding.fullProperty === change.name) {
+			// starts with prop chain to allow whole child object to be updated
+			if (binding.fullProperty.indexOf(changedProp) === 0) {
 				binding.update(self.model);
 			}
 		});
@@ -170,9 +203,9 @@ OnewayBinding.prototype.getBindings = function(element) {
 	var i = 0;
 	// 1. Look for attribute bindings on the current element
 	if (element.attributes) {
-		for(i = 0; i < element.attributes.length; i++) {
+		for (i = 0; i < element.attributes.length; i++) {
 			var attributeBindings = templating.getPlaceHolders(element.attributes[i].nodeValue)
-				.map(function(placeholder){
+				.map(function(placeholder) {
 					return new NodeBinding(element.attributes[i], placeholder);
 				});
 			bindings = bindings.concat(attributeBindings);
@@ -187,7 +220,7 @@ OnewayBinding.prototype.getBindings = function(element) {
 	} else {
 		// 2.b The element doesn't have children so look for a text binding
 		placeholders = templating.getPlaceHolders(element.textContent);
-		var textBindings = placeholders.map(function(placeholder){
+		var textBindings = placeholders.map(function(placeholder) {
 			return new NodeBinding(element, placeholder);
 		});
 		bindings = bindings.concat(textBindings);
