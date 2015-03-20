@@ -1,9 +1,18 @@
-# droopy-binding
-Clientside binding implemented with Object.observe
+Clientside binding implemented with Object.observe. IE9+ support when using polyfill version, `/dist/droopy-binding.polyfill.js`
 
 ## One-way Binding
 Automatically update UI when javascript object gets updated
 
+**html**
+```html
+<div id='container' data-id={{id}}>
+    Some text here for {{id}}
+	<h1 data-id='{{id}}'>{{title}}</h1>
+	<p>{{details}}</p>
+</div>
+```
+
+**javascript**
 ```javascript
 // setup the initial object to bind to
 var model = {
