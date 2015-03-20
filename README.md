@@ -15,6 +15,7 @@ Automatically update UI when javascript object gets updated
     Some text here for {{id}}
 	<h1>{{title}}</h1>
 	<p>{{details}}</p>
+	<strong>Author: {{author.name}}</strong>
 </div>
 ```
 
