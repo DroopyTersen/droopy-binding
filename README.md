@@ -1,6 +1,6 @@
 This is really just an exercise to mess with `Object.observe`.  I'm shooting for the binding functionality of **knockout.js**, the template syntax of **Handlebars**, without the overhead of **Angular**.  
 
-This is a very simple implementation. Next up will be support for nested properties and arrays, followed by two way binding.
+This is a very simple implementation. Next up will be support for arrays, followed by two way binding.
 
 IE9+ support when using polyfill version, `/dist/droopy-binding.polyfill.js`
 
@@ -25,7 +25,11 @@ var model = {
 	id: 123,
 	title: "My Title",
 	details: "These are the details",
-	visibility: "visible"
+	visibility: "visible",
+	author: {
+		name: "Andrew",
+		id: "12"
+	}
 };
 // create the binding and call 'init()' to display the default values
 var binding = new droopyBinding.OnewayBinding('container', model);
@@ -51,6 +55,11 @@ setTimeout(function(){
 setTimeout(function(){
 	model.visibility = "visible";
 }, 10000);
+
+// Even nested properties are supported
+setTimeout(function(){
+	model.author.name = "A new author name";
+}, 12000);
 ```
 
 
