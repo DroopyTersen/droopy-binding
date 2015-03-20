@@ -1,4 +1,4 @@
-This is really just an exercise to mess with `Object.observe`.  I'm shooting for the binding functionality of **knockout.js** with the template syntax of **Handlebars**.  
+This is really just an exercise to mess with `Object.observe`.  I'm shooting for the binding functionality of **knockout.js** , the template syntax of **Handlebars**, without the overhead of **Angular**.  
 
 This is a very simple implementation. Next up will be support for nested properties and arrays.  Followed by 2 way binding.
 
