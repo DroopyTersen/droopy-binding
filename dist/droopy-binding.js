@@ -134,38 +134,31 @@ var OnewayBinding = function(containerId, model) {
 OnewayBinding.prototype.init = function() {
 	var self = this;
 	self.updateBindings();
-	deepObserve(self.model, function(changes, propChain) {
+	self.recursiveObserve(self.model, "", function(changes, propChain) {
 		self.handleModelChange(changes, propChain);
 	});
 };
 
-function deepObserve(observable, onChange) {
-	innerObserve(observable, "", onChange);
+OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
+	var self = this;
+	// Make sure its an array or object
+	if (!Array.isArray(obj) && typeof obj !== "object") return;
 
-	function innerObserve(obj, propChain, callback) {
-		// Make sure its an array or object
-		if (!Array.isArray(obj) && typeof obj !== "object") return;
-
-		// Observe the current level
-		// TODO: add array support
-		//var nativeObserve = Array.isArray(obj) ? Array.observe : Object.observe;
-		Object.observe(obj, function(changes) {
-			callback(changes, propChain);
-		});
-		
-		// Recursively observe any child objects
-		Object.keys(obj).forEach(function(propName) {
-			var newPropChain = propChain;
-			if (newPropChain) {
-				newPropChain += "." + propName;
-			} else {
-				newPropChain = propName;
-			}
-			innerObserve(obj[propName], newPropChain, callback);
-		});
-	}
-}
-
+	Object.observe(obj, function(changes) {
+		callback(changes, propChain);
+	});
+	
+	// Recursively observe any child objects
+	Object.keys(obj).forEach(function(propName) {
+		var newPropChain = propChain;
+		if (newPropChain) {
+			newPropChain += "." + propName;
+		} else {
+			newPropChain = propName;
+		}
+		self.recursiveObserve(obj[propName], newPropChain, callback);
+	});
+};
 
 OnewayBinding.prototype.handleModelChange = function(changes, propChain) {
 	var self = this;
