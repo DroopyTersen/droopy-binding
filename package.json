@@ -1,0 +1,33 @@
+{
+  "name": "droopy-binding",
+  "version": "1.0.0",
+  "description": "Client side binding implmented with Object.observe",
+  "main": "./entries/droopy-binding.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/droopytersen/droopy-binding"
+  },
+  "keywords": [
+    "binding",
+    "droopy"
+  ],
+  "author": "Andrew Petersen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/droopytersen/droopy-binding/issues"
+  },
+  "homepage": "https://github.com/droopytersen/droopy-binding",
+  "dependencies": {
+    "droopy-templating": "^1.0.0",
+    "object.observe": "^0.2.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-browserify": "^0.5.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.1.0"
+  }
+}
