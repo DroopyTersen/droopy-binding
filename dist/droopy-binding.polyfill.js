@@ -6,7 +6,7 @@ global.droopyBinding.OnewayBinding = require("../src/onewayBinding");
 exports.OnewayBinding = global.droopyBinding.OnewayBinding;
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../src/onewayBinding":5,"object.observe":3}],2:[function(require,module,exports){
+},{"../src/onewayBinding":6,"object.observe":3}],2:[function(require,module,exports){
 var templating = {
 
 	Placeholder: function(raw) {
@@ -848,6 +848,29 @@ Object.observe || (function(O, A, root) {
 },{}],4:[function(require,module,exports){
 var templating = require("droopy-templating");
 
+var ArrayBinding = function(element, fullProperty) {
+	this.element = element;
+	this.original = element.innerHTML;
+	this.fullProperty = fullProperty;
+};
+
+ArrayBinding.prototype.update = function(scope) {
+	var self = this;
+	var arrayHtml = "";
+	var array = templating.getObjectValue(scope, self.fullProperty);
+
+	if (array && Array.isArray(array)) {
+		for (var i = 0; i < array.length; i++) {
+			arrayHtml += templating.populateTemplate(self.original, array[i], templating.Each.regExp);
+		}
+	}
+	self.element.innerHTML = arrayHtml;
+};
+
+module.exports = ArrayBinding;
+},{"droopy-templating":2}],5:[function(require,module,exports){
+var templating = require("droopy-templating");
+
 var NodeBinding = function(node, placeholder) {
 	this.node = node;
 	this.original = node.nodeValue;
@@ -862,9 +885,10 @@ NodeBinding.prototype.update = function(model) {
 };
 
 module.exports = NodeBinding;
-},{"droopy-templating":2}],5:[function(require,module,exports){
+},{"droopy-templating":2}],6:[function(require,module,exports){
 var templating = require("droopy-templating");
 var NodeBinding = require("./nodeBinding");
+var ArrayBinding = require("./arrayBinding");
 
 var OnewayBinding = function(containerId, model) {
 	this.model = model;
@@ -878,7 +902,7 @@ OnewayBinding.prototype.init = function() {
 	var self = this;
 	self.updateBindings();
 	self.recursiveObserve(self.model, "", function(changes, propChain) {
-		self.handleModelChange(changes, propChain);
+		self.handleScopeChange(changes, propChain);
 	});
 };
 
@@ -887,23 +911,47 @@ OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 	// Make sure its an array or object
 	if (!Array.isArray(obj) && typeof obj !== "object") return;
 
-	Object.observe(obj, function(changes) {
-		callback(changes, propChain);
-	});
+	if (Array.isArray(obj)) {
+		Array.observe(obj, function(changes) {
+			self.handleArrayChange(changes, propChain);
+		});
+		// Recursively observe any array items
+		obj.forEach(function(arrayItem, i){
+			self.recursiveObserve(arrayItem, "", function(changes) { 
+				self.handleArrayChange.call(self, changes, propChain); 
+			});
+		});
+
+	} else {
+		Object.observe(obj, function(changes) {
+			callback(changes, propChain);
+		});
+		
+		// Recursively observe any child objects
+		Object.keys(obj).forEach(function(propName) {
+			var newPropChain = propChain;
+			if (newPropChain) {
+				newPropChain += "." + propName;
+			} else {
+				newPropChain = propName;
+			}
+			self.recursiveObserve(obj[propName], newPropChain, callback);
+		});
+	}
 	
-	// Recursively observe any child objects
-	Object.keys(obj).forEach(function(propName) {
-		var newPropChain = propChain;
-		if (newPropChain) {
-			newPropChain += "." + propName;
-		} else {
-			newPropChain = propName;
+};
+
+OnewayBinding.prototype.handleArrayChange = function(changes, propChain) {
+	var self = this;
+	// Check each binding to see if it cares, update if it does
+	self.bindings.forEach(function(binding) {
+		if (binding.fullProperty === propChain) {
+			binding.update(self.model);
 		}
-		self.recursiveObserve(obj[propName], newPropChain, callback);
 	});
 };
 
-OnewayBinding.prototype.handleModelChange = function(changes, propChain) {
+OnewayBinding.prototype.handleScopeChange = function(changes, propChain) {
 	var self = this;
 	changes.forEach(function(change) {
 		var changedProp = change.name;
@@ -917,6 +965,11 @@ OnewayBinding.prototype.handleModelChange = function(changes, propChain) {
 				binding.update(self.model);
 			}
 		});
+		if (change.type === "update") {
+			self.recursiveObserve(change.object[change.name], changedProp, function(changes, propChain) {
+				self.handleScopeChange(changes, propChain);
+			});
+		}
 	});
 };
 
@@ -937,14 +990,18 @@ OnewayBinding.prototype.getBindings = function(element) {
 	var bindings = [];
 	var placeholders = [];
 	var i = 0;
-	// 1. Look for attribute bindings on the current element
+	// 1. Look for attribute bindings and array bindings on the current element
 	if (element.attributes) {
 		for (i = 0; i < element.attributes.length; i++) {
-			var attributeBindings = templating.getPlaceHolders(element.attributes[i].nodeValue)
-				.map(function(placeholder) {
-					return new NodeBinding(element.attributes[i], placeholder);
-				});
-			bindings = bindings.concat(attributeBindings);
+			if (element.attributes[i].nodeName === "data-each") {
+				bindings.push(new ArrayBinding(element, element.attributes[i].nodeValue));
+			} else {
+				var attributeBindings = templating.getPlaceHolders(element.attributes[i].nodeValue)
+					.map(function(placeholder) {
+						return new NodeBinding(element.attributes[i], placeholder);
+					});
+				bindings = bindings.concat(attributeBindings);				
+			}
 		}
 	}
 	// 2.a If the element has children, it won't have a text binding. Recurse on children
@@ -965,4 +1022,4 @@ OnewayBinding.prototype.getBindings = function(element) {
 };
 
 module.exports = OnewayBinding;
-},{"./nodeBinding":4,"droopy-templating":2}]},{},[1])
+},{"./arrayBinding":4,"./nodeBinding":5,"droopy-templating":2}]},{},[1])
