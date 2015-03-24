@@ -69,8 +69,13 @@
 
 		// Even nested properties are supported
 		setTimeout(function(){
-		    model.author.name = "I'm a  nested property!";
-		}, 3500);
+		    model.complexItems[0].name = "I'm an array item nested property!";
+		}, 3000);
+
+				// Even nested properties are supported
+		setTimeout(function(){
+		    model.complexItems.push({name: "And I'm a whole new item"});
+		}, 3000);
 	</script>
 </body>
 </html>
