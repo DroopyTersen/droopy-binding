@@ -14,7 +14,7 @@ OnewayBinding.prototype.init = function() {
 	var self = this;
 	self.updateBindings();
 	self.recursiveObserve(self.model, "", function(changes, propChain) {
-		self.handleScopeChange(changes, propChain);
+		self.handleObjectChange(changes, propChain);
 	});
 };
 
@@ -30,7 +30,7 @@ OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 		// Recursively observe any array items
 		obj.forEach(function(arrayItem, i){
 			self.recursiveObserve(arrayItem, "", function(changes) { 
-				self.handleArrayChange.call(self, changes, propChain); 
+				self.handleArrayChange.call(self, changes, propChain);
 			});
 		});
 
@@ -55,7 +55,28 @@ OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 
 OnewayBinding.prototype.handleArrayChange = function(changes, propChain) {
 	var self = this;
-	// Check each binding to see if it cares, update if it does
+
+	// Re-observe any new objects
+	changes.forEach(function(change){
+		//If its an array change, and an update, its a new index assignment so re-observe
+		if (Array.isArray(change.object) && change.type === "update") {
+			self.recursiveObserve(change.object[change.name], "", function(changes) { 
+				self.handleArrayChange.call(self, changes, propChain);
+			});
+		} 
+		// If its a push or a pop it will come through as splice
+		else if (Array.isArray(change.object) && change.type === "splice") {
+			// If its a push, addedCount will be 1
+			if (change.addedCount > 0) {
+				// start observing the new array item
+				self.recursiveObserve(change.object[change.index], "", function(changes) { 
+					self.handleArrayChange.call(self, changes, propChain);
+				});
+			}
+			// If its a pop we really don't care here because there is nothing to re-observe
+		}
+	});
+	// Rerender data-each bindings that are tied to the array
 	self.bindings.forEach(function(binding) {
 		if (binding.fullProperty === propChain) {
 			binding.update(self.model);
@@ -63,13 +84,15 @@ OnewayBinding.prototype.handleArrayChange = function(changes, propChain) {
 	});
 };
 
-OnewayBinding.prototype.handleScopeChange = function(changes, propChain) {
+OnewayBinding.prototype.handleObjectChange = function(changes, propChain) {
 	var self = this;
 	changes.forEach(function(change) {
+		// Get the property chain string to tie back to UI placeholder
 		var changedProp = change.name;
 		if (propChain) {
 			changedProp = propChain + "." + change.name;
 		}
+
 		// Check each binding to see if it cares, update if it does
 		self.bindings.forEach(function(binding) {
 			// starts with prop chain to allow whole child object to be updated
@@ -77,10 +100,11 @@ OnewayBinding.prototype.handleScopeChange = function(changes, propChain) {
 				binding.update(self.model);
 			}
 		});
-		// If object gets overwritted, need to reobserve it
+
+		// If object gets overwritten, need to re-observe it
 		if (change.type === "update") {
 			self.recursiveObserve(change.object[change.name], changedProp, function(changes, propChain) {
-				self.handleScopeChange(changes, propChain);
+				self.handleObjectChange(changes, propChain);
 			});
 		}
 	});
