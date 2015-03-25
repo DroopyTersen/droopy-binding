@@ -18,10 +18,6 @@ Reference a property anywhere in your HTML using double curly braces `{{property
 	<p>{{details}}</p>
 	<!-- Reference nested properties with dot notation-->
 	<strong>Author: {{author.firstName}} {{author.lastName}}</strong>
-	<div style='margin-top:40px'>
-		<label>Update the title here:</label>
-		<input id='titleTextBox' value='{{title}}' />
-	</div>
 
 	<!-- To iterate through an Array, use the data-each attribute-->
 	<ul data-each='complexItems'>
