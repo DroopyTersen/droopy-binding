@@ -10,6 +10,7 @@ Automatically update UI when javascript object gets updated
 
 
 ##### HTML
+Reference a property anywhere in your HTML using double curly braces `{{property}}`
 ```html
 <div id='container' data-id='{{id}}' style='visibility: {{visibility}}'>
 	<h1>{{title}}</h1>
@@ -36,9 +37,18 @@ Automatically update UI when javascript object gets updated
 	</ul>
 </div>
 ```
+- Reference a property anywhere in your HTML using double curly braces `{{property}}`
+- Reference nested properties with dot notation `{{author.firstName}}`
+- Loop through Arrays using the `data-each` attribute, `data-each='arrayName'`
+- When looping through an Array, reference a property on the current item with a curly brace then a square bracket, `{[property]}`
+- To reference the current scope, use an underscore,`{{_}}`.  For example, if you are iterating an array of strings, there would no property to reference on each item, so use the underscore to use the current item's value, `<div data-each='names'><h3>{[_]}</h3><div>`.
+
 
 ##### JavaScript
-Create your binding by passing the id of the element that contains all of your placeholders, and the object you want to bind to.
+Create your binding by passing:
+1. The id of the HTML element that contains all of your placeholders
+2. The object you want to bind to
+
 ```javascript
 var binding = new droopyBinding.OnewayBinding('container', viewModel);
 binding.init(); // calling init is what actually applys the binding to the UI.
@@ -76,14 +86,14 @@ var viewModel = {
 
 #### Update Examples
 ```javascript
-// Pretend we made an async ajax request (we're faking it with setTimeout) and got new property values for our model
-// The 'title' and 'details', and items list will automatically update in the view
+// Lots of times we'll make an AJAX request, get new data, then have to show the new data in the view
+// With binding, as soon as you update the viewModel with your new data, the view automatically updates.
 // No UI code required
-setTimeout(function(responseData){
+$.getJSON("/api/mydata").then(function(responseData) {
 	viewModel.title = "New Title",
-	viewModel.details = "This simulates data changing after an async ajax request";
-	viewModel.complexItems = responseData.items;
-}, 150);
+	viewModel.details = "The details have changed to:" + resonseData.details;
+	viewModel.complexItems = responseData.items;	
+});
 
 // Updating a specific array item's nested property will update that item in the view
 viewModel.complexItems[0].name = "I'm an array item nested property!";
