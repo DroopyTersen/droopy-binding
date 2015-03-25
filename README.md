@@ -47,7 +47,7 @@ Create your binding by passing:
 
 ```javascript
 var binding = new droopyBinding.OnewayBinding('container', viewModel);
-binding.init(); // calling init is what actually applys the binding to the UI.
+binding.init(); // calling init is what actually applies the binding to the UI.
 ```
 In the above example, `viewModel` would be an object like this
 ```javascript
