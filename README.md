@@ -1,6 +1,6 @@
 This is really just an exercise to mess with `Object.observe`.  I'm shooting for the binding functionality of **knockout.js**, the template syntax of **Handlebars**, without the overhead of **Angular**.  
 
-## [Live Demo](http://jsfiddle.net/andrewpetersen15/mmabt420/)
+### [Live Demo](http://jsfiddle.net/andrewpetersen15/mmabt420/)
 
 This is a very simple implementation but it does support nested Objects and Arrays (including `Array.push()`).
 IE9+ support when using polyfill version, `/dist/droopy-binding.polyfill.js`
