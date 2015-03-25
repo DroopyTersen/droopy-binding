@@ -81,10 +81,9 @@ var viewModel = {
 ```
 
 #### Update Examples
+Lots of times we'll make an AJAX request, get new data, then have write UI code to show the new data in the view. With binding, as soon as you update the viewModel with new data, the view automatically updates. **No UI code required**
 ```javascript
-// Lots of times we'll make an AJAX request, get new data, then have to show the new data in the view
-// With binding, as soon as you update the viewModel with your new data, the view automatically updates.
-// No UI code required
+// Make an AJAX request for new data, and automatically update view when the new data is applied to the viewModel
 $.getJSON("/api/mydata").then(function(responseData) {
 	viewModel.title = "New Title",
 	viewModel.details = "The details have changed to:" + resonseData.details;
