@@ -912,9 +912,15 @@ OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 	if (!Array.isArray(obj) && typeof obj !== "object") return;
 
 	if (Array.isArray(obj)) {
-		Array.observe(obj, function(changes) {
-			self.handleArrayChange(changes, propChain);
-		});
+		if (Array.observe) {
+			Array.observe(obj, function(changes) {
+				self.handleArrayChange(changes, propChain);
+			});			
+		} else {
+			Object.observe(obj, function(changes) {
+				self.handleArrayChange(changes, propChain);
+			});	
+		}
 		// Recursively observe any array items
 		obj.forEach(function(arrayItem, i){
 			self.recursiveObserve(arrayItem, "", function(changes) { 
