@@ -147,12 +147,16 @@ var templating = require("droopy-templating");
 var NodeBinding = require("./nodeBinding");
 var ArrayBinding = require("./arrayBinding");
 
-var OnewayBinding = function(containerId, model) {
+var OnewayBinding = function(containerId, model, shouldInit) {
 	this.model = model;
 	this.container = document.getElementById(containerId);
 
 	//Get all bindings
 	this.bindings = this.getBindings(this.container);
+
+	if (shouldInit !== false) {
+		this.init();
+	}
 };
 
 OnewayBinding.prototype.init = function() {
