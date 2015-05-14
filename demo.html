@@ -31,6 +31,9 @@
 		<ul data-each='complexItems'>
 			<li>{[name]}</li>
 		</ul>
+
+		<strong>Selected Again: {{selectedItem}}</strong>
+
 	</div>
 	<script>
 		// setup the initial object to bind to
@@ -63,6 +66,13 @@
 		// create the binding and call 'init()' to display the default values
 		var binding = new DroopyBinding('container', model);
 		
+		binding.subscribe("updating", "title", function(){
+			alert("title is about to change");
+		});
+
+		binding.subscribe("updated", "author", function() {
+			alert("you just modified the author");
+		});
 		// manually setup '2 way binding'
 		// var textBox = document.getElementById('titleTextBox');
 		// textBox.addEventListener("keyup", function() { 

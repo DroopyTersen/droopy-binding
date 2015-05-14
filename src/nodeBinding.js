@@ -15,12 +15,14 @@ var NodeBinding = function(node, placeholder, element) {
 NodeBinding.prototype = new Eventable();
 
 NodeBinding.prototype.setupTwoWay = function() {
+	var self = this;
 	if (this.node.nodeName === "value" && this.element) {
 		if (this.element.tagName.toLowerCase() === "input") {
 			this.element.addEventListener("input", this.onInputChange.bind(this));
 		}
 		if (this.element.tagName.toLowerCase() === "select") {
 			this.element.addEventListener("change", this.onInputChange.bind(this));
+			setTimeout(this.onInputChange.bind(this), 1);
 		}
 	}
 };
@@ -32,11 +34,17 @@ NodeBinding.prototype.onInputChange = function() {
 
 NodeBinding.prototype.update = function(model) {
 	var self = this;
-	var html = templating.renderTemplate(self.original, model);
-	self.node.nodeValue = html;
-	if (self.node.nodeName === "value" && self.element) {
-		self.element.value = html;
-	}
+	self.trigger("updating");
+	//skip a tick in event loop to let 'updating' be handled before update
+	setTimeout(function() {
+		var html = templating.renderTemplate(self.original, model);
+		self.node.nodeValue = html;
+		if (self.node.nodeName === "value" && self.element) {
+			self.element.value = html;
+		}
+		self.trigger("updated");		
+	},1);
+
 };
 
 module.exports = NodeBinding;

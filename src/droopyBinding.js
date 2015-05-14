@@ -94,6 +94,12 @@ DroopyBinding.prototype.handleArrayChange = function(changes, propChain) {
 	});
 };
 
+var _findBindings = function(bindings, property) {
+	return bindings.filter(function(binding) {
+		return (binding.fullProperty.indexOf(property) === 0)
+	});
+};
+
 DroopyBinding.prototype.handleObjectChange = function(changes, propChain) {
 	var self = this;
 	changes.forEach(function(change) {
@@ -104,11 +110,8 @@ DroopyBinding.prototype.handleObjectChange = function(changes, propChain) {
 		}
 
 		// Check each binding to see if it cares, update if it does
-		self.bindings.forEach(function(binding) {
-			// starts with prop chain to allow whole child object to be updated
-			if (binding.fullProperty.indexOf(changedProp) === 0) {
-				binding.update(self.model);
-			}
+		_findBindings(self.bindings, changedProp).forEach(function(binding){
+			binding.update(self.model);
 		});
 
 		// If object gets overwritten, need to re-observe it
@@ -190,5 +193,15 @@ DroopyBinding.prototype.getBindings = function(element) {
 	}
 	return bindings;
 };
+
+DroopyBinding.prototype.subscribe = function(event, property, callback) {
+	var matches = _findBindings(this.bindings, property);
+	//There could be many bindings for the same property, we only want to surface one event though
+	if (matches && matches.length) {
+		matches[0].on(event, callback);
+	}
+};
+
+
 
 module.exports = DroopyBinding;
