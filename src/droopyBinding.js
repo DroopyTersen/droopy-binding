@@ -187,7 +187,7 @@ DroopyBinding.prototype.getBindings = function(element) {
 		// 2.b The element doesn't have children so look for a text binding
 		placeholders = templating.getPlaceHolders(element.textContent);
 		var textBindings = placeholders.map(function(placeholder) {
-			var binding = new NodeBinding(element, placeholder, element.parentElement);
+			var binding = new NodeBinding(element, placeholder, element.parentNode);
 			binding.on("input-change", self.updateModelProperty.bind(self));
 			return binding;
 		});

@@ -16,7 +16,7 @@ NodeBinding.prototype = new Eventable();
 
 NodeBinding.prototype.setupTwoWay = function() {
 	var self = this;
-	if (this.element) {
+	if (this.element && this.element.tagName) {
 		var elementType = this.element.tagName.toLowerCase();
 		// TEXT AREA
 		if (elementType === "textarea") {
@@ -42,15 +42,6 @@ NodeBinding.prototype.onInputChange = function() {
 	this.trigger("input-change", this.fullProperty, this.element.value );
 };
 
-function _convertLineBreaks (str, is_xhtml) {   
-    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
-    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
-}
-
-function _brTagsToNodes(node) {
-	var lines = html.split("<br />");
-	//create text node and br nodes
-}
 NodeBinding.prototype.update = function(model) {
 	var self = this;
 	self.trigger("updating");

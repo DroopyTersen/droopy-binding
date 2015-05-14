@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>Droopy Binding Demo</title>
-	<script src='dist/droopy-binding.js'></script>
+	<script src='dist/droopy-binding.polyfill.js'></script>
 </head>
 <body>
 	<div id='container' data-id='{{id}}' style='visibility: {{visibility}}'>
@@ -68,36 +68,17 @@
 		// create the binding and call 'init()' to display the default values
 		var binding = new DroopyBinding('container', model);
 		
-		binding.subscribe("updating", "title", function(){
-			alert("title is about to change");
-		});
+		// binding.subscribe("updating", "title", function(){
+		// 	alert("title is about to change");
+		// });
 
-		binding.subscribe("updated", "author.name", function() {
-			alert("you just modified the author name");
-		});
-		// manually setup '2 way binding'
-		// var textBox = document.getElementById('titleTextBox');
-		// textBox.addEventListener("keyup", function() { 
-		//     model.title = textBox.value;
-		// }, false);
-
-		// Pretend we made an async ajax request and got new property values for our model
-		// The 'title' and 'details' will automatically update in the view
-		// No UI code required
 		setTimeout(function(){
 		    model.title = "Updated Title";
 		    model.details = "This simulates data changing after an async ajax request";
-		}, 2500);
-
-		// Even nested properties are supported
-		setTimeout(function(){
-		    model.complexItems[0].name = "I'm an array item nested property!";
-		}, 3000);
-
-				// Even nested properties are supported
-		setTimeout(function(){
 		    model.complexItems.push({name: "And I'm a whole new item"});
-		}, 3000);
+		    model.complexItems[0].name = "I'm an array item nested property!";
+		}, 2000);
+
 	</script>
 </body>
 </html>
