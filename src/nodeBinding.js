@@ -16,15 +16,25 @@ NodeBinding.prototype = new Eventable();
 
 NodeBinding.prototype.setupTwoWay = function() {
 	var self = this;
-	if (this.node.nodeName === "value" && this.element) {
-		if (this.element.tagName.toLowerCase() === "input") {
+	if (this.element) {
+		var elementType = this.element.tagName.toLowerCase();
+		// TEXT AREA
+		if (elementType === "textarea") {
 			this.element.addEventListener("input", this.onInputChange.bind(this));
-		}
-		if (this.element.tagName.toLowerCase() === "select") {
-			this.element.addEventListener("change", this.onInputChange.bind(this));
-			setTimeout(this.onInputChange.bind(this), 1);
+
+		} else if (this.node.nodeName === "value") {
+			// INPUT element
+			if (elementType === "input") {
+				this.element.addEventListener("input", this.onInputChange.bind(this));
+			} 
+			// SELECT element
+			else if (elementType === "select") {
+				this.element.addEventListener("change", this.onInputChange.bind(this));
+				setTimeout(this.onInputChange.bind(this), 1);
+			}
 		}
 	}
+
 };
 
 NodeBinding.prototype.onInputChange = function() {
@@ -32,6 +42,15 @@ NodeBinding.prototype.onInputChange = function() {
 	this.trigger("input-change", this.fullProperty, this.element.value );
 };
 
+function _convertLineBreaks (str, is_xhtml) {   
+    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+}
+
+function _brTagsToNodes(node) {
+	var lines = html.split("<br />");
+	//create text node and br nodes
+}
 NodeBinding.prototype.update = function(model) {
 	var self = this;
 	self.trigger("updating");
@@ -44,7 +63,6 @@ NodeBinding.prototype.update = function(model) {
 		}
 		self.trigger("updated");		
 	},1);
-
 };
 
 module.exports = NodeBinding;

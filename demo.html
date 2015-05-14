@@ -33,7 +33,9 @@
 		</ul>
 
 		<strong>Selected Again: {{selectedItem}}</strong>
-
+		<div>
+			<textarea rows='7' cols='50'>{{details}}</textarea>
+		</div>
 	</div>
 	<script>
 		// setup the initial object to bind to
@@ -70,8 +72,8 @@
 			alert("title is about to change");
 		});
 
-		binding.subscribe("updated", "author", function() {
-			alert("you just modified the author");
+		binding.subscribe("updated", "author.name", function() {
+			alert("you just modified the author name");
 		});
 		// manually setup '2 way binding'
 		// var textBox = document.getElementById('titleTextBox');
