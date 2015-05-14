@@ -6,7 +6,7 @@ var browserify = require('gulp-browserify');
 var browserifyAndMinify = function(entry, minifiedName) {
 	return gulp.src(entry)
 		.pipe(browserify({
-			debug: false
+			debug: true
 		}))
 		.pipe(gulp.dest('./dist/'))
 		.pipe(rename(minifiedName))

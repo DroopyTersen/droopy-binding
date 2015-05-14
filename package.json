@@ -1,7 +1,7 @@
 {
   "name": "droopy-binding",
   "version": "1.3.3",
-  "description": "Client side binding implmented with Object.observe",
+  "description": "Client side binding implemented with Object.observe",
   "main": "./entries/droopy-binding.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/droopytersen/droopy-binding",
   "dependencies": {
+    "droopy-events": "0.0.0",
     "droopy-templating": "^1.0.0",
     "object.observe": "^0.2.3"
   },

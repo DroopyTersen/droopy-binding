@@ -10,13 +10,23 @@
 		<h1>{{title}}</h1>
 		<p>{{details}}</p>
 		<strong>Author: {{author.name}}</strong>
+		<br/>
+		<strong>Selected: {{selectedItem}}</strong>
 		<div style='margin-top:40px'>
 			<label>Title:</label>
 			<input id='titleTextBox' value='{{title}}' />
 		</div>
-		<ul data-each='items'>
-			<li>{[_]}</li>
-		</ul>
+
+		<div style='margin-top:40px'>
+			<label>Author:</label>
+			<input id='authorTextBox' value='{{author.name}}' />
+		</div>
+		<br/>
+
+		<select value='{{selectedItem}}' data-each='items'>
+			<option value='{[_]}'>{[_]}</option>
+		</select>
+		<br/>
 
 		<ul data-each='complexItems'>
 			<li>{[name]}</li>
@@ -47,22 +57,23 @@
 		    		name: "itemTwo",
 		    		id:2
 		    	}
-		    ]
+		    ],
+		    selectedItem: "-1"
 		};
 		// create the binding and call 'init()' to display the default values
-		var binding = new droopyBinding.OnewayBinding('container', model);
+		var binding = new DroopyBinding('container', model);
 		
 		// manually setup '2 way binding'
-		var textBox = document.getElementById('titleTextBox');
-		textBox.addEventListener("keyup", function() { 
-		    model.title = textBox.value;
-		}, false);
+		// var textBox = document.getElementById('titleTextBox');
+		// textBox.addEventListener("keyup", function() { 
+		//     model.title = textBox.value;
+		// }, false);
 
 		// Pretend we made an async ajax request and got new property values for our model
 		// The 'title' and 'details' will automatically update in the view
 		// No UI code required
 		setTimeout(function(){
-		    model.title = "Updated Title",
+		    model.title = "Updated Title";
 		    model.details = "This simulates data changing after an async ajax request";
 		}, 2500);
 

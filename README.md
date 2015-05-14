@@ -1,13 +1,13 @@
-This is really just an exercise to mess with `Object.observe`.  I'm shooting for the binding functionality of **knockout.js**, the template syntax of **Handlebars**, without the overhead of **Angular**.  
+I'm shooting for the binding functionality of **knockout.js**, the template syntax of **Handlebars**, without the overhead of **Angular**.  
 
+Feel free to read the docs, but the best way to get a feel is to play with the demo.
 ### [Live Demo](http://jsfiddle.net/andrewpetersen15/mmabt420/)
 
 This is a very simple implementation but it does support nested Objects and Arrays (including `Array.push()`).
 IE9+ support when using polyfill version, `/dist/droopy-binding.polyfill.js`
 
-## One-way Binding
-Automatically update UI when javascript object gets updated
-
+## Two-way Binding
+Automatically both your UI and javascript object properties when things get changed.
 
 ##### HTML
 Reference a property anywhere in your HTML using double curly braces `{{property}}`
@@ -46,7 +46,7 @@ Create your binding by passing:
 2. The object you want to bind to
 
 ```javascript
-var binding = new droopyBinding.OnewayBinding('container', viewModel);
+var binding = new DroopyBinding('container', viewModel);
 ```
 In the above example, `viewModel` would be an object like this
 ```javascript

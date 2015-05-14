@@ -2,7 +2,7 @@ var templating = require("droopy-templating");
 var NodeBinding = require("./nodeBinding");
 var ArrayBinding = require("./arrayBinding");
 
-var OnewayBinding = function(containerId, model, shouldInit) {
+var DroopyBinding = function(containerId, model, shouldInit) {
 	this.model = model;
 	this.container = document.getElementById(containerId);
 
@@ -14,7 +14,7 @@ var OnewayBinding = function(containerId, model, shouldInit) {
 	}
 };
 
-OnewayBinding.prototype.init = function() {
+DroopyBinding.prototype.init = function() {
 	var self = this;
 	self.updateBindings();
 	self.recursiveObserve(self.model, "", function(changes, propChain) {
@@ -22,7 +22,7 @@ OnewayBinding.prototype.init = function() {
 	});
 };
 
-OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
+DroopyBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 	var self = this;
 	// Make sure its an array or object
 	if (!Array.isArray(obj) && typeof obj !== "object") return;
@@ -63,7 +63,7 @@ OnewayBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 	
 };
 
-OnewayBinding.prototype.handleArrayChange = function(changes, propChain) {
+DroopyBinding.prototype.handleArrayChange = function(changes, propChain) {
 	var self = this;
 
 	// Re-observe any new objects
@@ -94,7 +94,7 @@ OnewayBinding.prototype.handleArrayChange = function(changes, propChain) {
 	});
 };
 
-OnewayBinding.prototype.handleObjectChange = function(changes, propChain) {
+DroopyBinding.prototype.handleObjectChange = function(changes, propChain) {
 	var self = this;
 	changes.forEach(function(change) {
 		// Get the property chain string to tie back to UI placeholder
@@ -120,19 +120,40 @@ OnewayBinding.prototype.handleObjectChange = function(changes, propChain) {
 	});
 };
 
-OnewayBinding.prototype.updateBindings = function() {
+DroopyBinding.prototype.updateBindings = function() {
 	var self = this;
 	self.bindings.forEach(function(binding) {
 		binding.update(self.model);
 	});
 };
 
-OnewayBinding.prototype.updateModel = function(newModel) {
+DroopyBinding.prototype.updateModelProperty = function(fullProperty, newValue) {
+	//start with the model
+	var propertyChain = fullProperty.split('.');
+	var parentObj = this.model;
+	var property = fullProperty;
+	//traverse the property chain, except for last one
+	for (var i = 0; i < propertyChain.length - 1; i++) {
+		if (parentObj[propertyChain[i]] != null) {
+			property = propertyChain[i];
+			parentObj = parentObj[property];
+		} 
+	}
+	//if its an underscore, its referencing the model scope
+	if(fullProperty === "_") {
+		parentObj = newValue;
+	} else {
+		property = propertyChain[propertyChain.length - 1];
+		parentObj[property] = newValue;
+	}
+};
+
+DroopyBinding.prototype.updateModel = function(newModel) {
 	this.model = newModel;
 	this.init();
 };
 
-OnewayBinding.prototype.getBindings = function(element) {
+DroopyBinding.prototype.getBindings = function(element) {
 	var self = this;
 	var bindings = [];
 	var placeholders = [];
@@ -145,7 +166,9 @@ OnewayBinding.prototype.getBindings = function(element) {
 			} else {
 				var attributeBindings = templating.getPlaceHolders(element.attributes[i].nodeValue)
 					.map(function(placeholder) {
-						return new NodeBinding(element.attributes[i], placeholder);
+						var binding = new NodeBinding(element.attributes[i], placeholder, element);
+						binding.on("input-change", self.updateModelProperty.bind(self));
+						return binding;
 					});
 				bindings = bindings.concat(attributeBindings);				
 			}
@@ -168,4 +191,4 @@ OnewayBinding.prototype.getBindings = function(element) {
 	return bindings;
 };
 
-module.exports = OnewayBinding;
+module.exports = DroopyBinding;

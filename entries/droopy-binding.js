@@ -1,3 +1,3 @@
 global.droopyBinding = {};
-global.droopyBinding.OnewayBinding = require("../src/onewayBinding");
-exports.OnewayBinding = global.droopyBinding.OnewayBinding;
+global.DroopyBinding = require("../src/droopyBinding");
+exports.DroopyBinding = global.DroopyBinding;
