@@ -26,6 +26,7 @@ NodeBinding.prototype.setupTwoWay = function() {
 			// INPUT element
 			if (elementType === "input") {
 				this.element.addEventListener("input", this.onInputChange.bind(this));
+				this.element.addEventListener("change", this.onInputChange.bind(this));
 			} 
 			// SELECT element
 			else if (elementType === "select") {
@@ -34,7 +35,6 @@ NodeBinding.prototype.setupTwoWay = function() {
 			}
 		}
 	}
-
 };
 
 NodeBinding.prototype.onInputChange = function() {
@@ -44,16 +44,16 @@ NodeBinding.prototype.onInputChange = function() {
 
 NodeBinding.prototype.update = function(model) {
 	var self = this;
-	self.trigger("updating");
+	self.trigger("updating", self.fullProperty);
 	//skip a tick in event loop to let 'updating' be handled before update
-	setTimeout(function() {
 		var html = templating.renderTemplate(self.original, model);
 		self.node.nodeValue = html;
 		if (self.node.nodeName === "value" && self.element) {
-			self.element.value = html;
+			if (self.element.value !== html) {
+				self.element.value = html;
+			}
 		}
-		self.trigger("updated");		
-	},1);
+		self.trigger("updated", self.fullProperty);		
 };
 
 module.exports = NodeBinding;

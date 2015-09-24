@@ -1,19 +1,23 @@
 var templating = require("droopy-templating");
 var NodeBinding = require("./nodeBinding");
 var ArrayBinding = require("./arrayBinding");
+var Eventable = require("droopy-events");
 
-var DroopyBinding = function(containerId, model, shouldInit) {
+var DroopyBinding = function(containerId, model, options) {
+	options = options || {};
 	this.model = model;
 	this.container = document.getElementById(containerId);
-
+	this.observeArrayItems = options.observeArrayItems || false;
 	//Get all bindings
 	this.bindings = this.getBindings(this.container);
+	Eventable.call(this);
 
-	if (shouldInit !== false) {
+	if (options.shouldInit !== false) {
 		this.init();
 	}
 };
 
+DroopyBinding.prototype = new Eventable();
 DroopyBinding.prototype.init = function() {
 	var self = this;
 	self.updateBindings();
@@ -21,14 +25,13 @@ DroopyBinding.prototype.init = function() {
 		self.handleObjectChange(changes, propChain);
 	});
 };
-
 DroopyBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 	var self = this;
 	// Make sure its an array or object
 	if (!Array.isArray(obj) && typeof obj !== "object") return;
 
 	if (Array.isArray(obj)) {
-		if (Array.observe) {
+		if (false && Array.observe) {
 			Array.observe(obj, function(changes) {
 				self.handleArrayChange(changes, propChain);
 			});			
@@ -37,13 +40,14 @@ DroopyBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 				self.handleArrayChange(changes, propChain);
 			});	
 		}
-		// Recursively observe any array items
-		obj.forEach(function(arrayItem, i){
-			self.recursiveObserve(arrayItem, "", function(changes) { 
-				self.handleArrayChange.call(self, changes, propChain);
-			});
-		});
-
+		if (this.observeArrayItems) {
+			// Recursively observe any array items
+			obj.forEach(function(arrayItem, i){
+				self.recursiveObserve(arrayItem, "", function(changes) { 
+					self.handleArrayChange.call(self, changes, propChain);
+				});
+			});			
+		}
 	} else {
 		Object.observe(obj, function(changes) {
 			callback(changes, propChain);
@@ -65,9 +69,10 @@ DroopyBinding.prototype.recursiveObserve = function(obj, propChain, callback) {
 
 DroopyBinding.prototype.handleArrayChange = function(changes, propChain) {
 	var self = this;
-
+	var count = 0;
 	// Re-observe any new objects
 	changes.forEach(function(change){
+		count++;
 		//If its an array change, and an update, its a new index assignment so re-observe
 		if (Array.isArray(change.object) && change.type === "update") {
 			self.recursiveObserve(change.object[change.name], "", function(changes) { 
@@ -156,6 +161,26 @@ DroopyBinding.prototype.updateModel = function(newModel) {
 	this.init();
 };
 
+DroopyBinding.prototype.bindEvents = function(nodeBinding) {
+	var self = this;
+	nodeBinding.on("input-change", self.updateModelProperty.bind(self));
+	nodeBinding.on("updating", function(fullProperty) {
+		self.broadcast("updating", fullProperty);
+	});
+	nodeBinding.on("updated", function(fullProperty) {
+		self.broadcast("updated", fullProperty);
+	});
+};
+
+DroopyBinding.prototype.broadcast = function(event, fullProperty) {
+	var properties = fullProperty.split(".");
+	var propChain = "";
+	for(var i = 0; i < properties.length; i++) {
+		propChain = propChain + properties[i];
+		this.trigger(event + "-" + propChain);
+		propChain += ".";
+	}
+};
 DroopyBinding.prototype.getBindings = function(element) {
 	var self = this;
 	var bindings = [];
@@ -170,7 +195,7 @@ DroopyBinding.prototype.getBindings = function(element) {
 				var attributeBindings = templating.getPlaceHolders(element.attributes[i].nodeValue)
 					.map(function(placeholder) {
 						var binding = new NodeBinding(element.attributes[i], placeholder, element);
-						binding.on("input-change", self.updateModelProperty.bind(self));
+						self.bindEvents(binding);
 						return binding;
 					});
 				bindings = bindings.concat(attributeBindings);				
@@ -188,7 +213,7 @@ DroopyBinding.prototype.getBindings = function(element) {
 		placeholders = templating.getPlaceHolders(element.textContent);
 		var textBindings = placeholders.map(function(placeholder) {
 			var binding = new NodeBinding(element, placeholder, element.parentNode);
-			binding.on("input-change", self.updateModelProperty.bind(self));
+			self.bindEvents(binding);
 			return binding;
 		});
 		bindings = bindings.concat(textBindings);
@@ -197,11 +222,7 @@ DroopyBinding.prototype.getBindings = function(element) {
 };
 
 DroopyBinding.prototype.subscribe = function(event, property, callback) {
-	var matches = _findBindings(this.bindings, property);
-	//There could be many bindings for the same property, we only want to surface one event though
-	if (matches && matches.length) {
-		matches[0].on(event, callback);
-	}
+	this.on(event + "-" + property, callback);
 };
 
 

@@ -2,7 +2,9 @@
 <html>
 <head>
 	<title>Droopy Binding Demo</title>
+
 	<script src='dist/droopy-binding.polyfill.js'></script>
+	<script src='https://code.jquery.com/jquery-2.1.4.js'></script>
 </head>
 <body>
 	<div id='container' data-id='{{id}}' style='visibility: {{visibility}}'>
@@ -73,7 +75,11 @@
 		// });
 
 		setTimeout(function(){
-		    model.title = "Updated Title";
+			var titleInput = document.querySelector("#titleTextBox");
+		    titleInput.value = "Updated Title";
+		    var evt = document.createEvent("HTMLEvents");
+    	evt.initEvent("change", false, true);
+			titleInput.dispatchEvent(evt);
 		    model.details = "This simulates data changing after an async ajax request";
 		    model.complexItems.push({name: "And I'm a whole new item"});
 		    model.complexItems[0].name = "I'm an array item nested property!";
