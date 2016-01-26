@@ -1,6 +1,6 @@
 {
   "name": "droopy-binding",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "description": "Client side binding implemented with Object.observe",
   "main": "./entries/droopy-binding.js",
   "scripts": {
